@@ -32,7 +32,7 @@ namespace TrainingScenarios.Runtime.Actions.Bindings
 
             foreach (var binding in _bindings)
             {
-                if (binding == null)
+                if (!binding)
                 {
                     continue;
                 }

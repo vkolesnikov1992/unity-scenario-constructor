@@ -11,12 +11,12 @@ namespace TrainingScenarios.Runtime.Validation.Rules.Providers
         public IEnumerable<ValidationIssue> Validate(ScenarioValidationContext context)
         {
             var scenario = context.Scenario;
-            if (scenario == null)
+            if (!scenario)
             {
                 yield break;
             }
 
-            if (scenario.LoggerProvider == null)
+            if (!scenario.LoggerProvider)
             {
                 yield return new ValidationIssue(
                     "LOGGER_PROVIDER_MISSING",
@@ -47,7 +47,7 @@ namespace TrainingScenarios.Runtime.Validation.Rules.Providers
             ScenarioMode expectedMode,
             UnityEngine.Object scenarioContext)
         {
-            if (profile == null)
+            if (!profile)
             {
                 yield return new ValidationIssue(
                     "MODE_PROFILE_MISSING",
@@ -57,7 +57,7 @@ namespace TrainingScenarios.Runtime.Validation.Rules.Providers
                 yield break;
             }
 
-            if (profile.AnalyzerProvider == null)
+            if (!profile.AnalyzerProvider)
             {
                 yield return new ValidationIssue(
                     "ANALYZER_PROVIDER_MISSING",

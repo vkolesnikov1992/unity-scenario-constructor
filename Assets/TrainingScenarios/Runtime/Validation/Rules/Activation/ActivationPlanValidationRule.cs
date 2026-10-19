@@ -11,7 +11,7 @@ namespace TrainingScenarios.Runtime.Validation.Rules.Activation
         public IEnumerable<ValidationIssue> Validate(ScenarioValidationContext context)
         {
             var scenario = context.Scenario;
-            if (scenario == null)
+            if (!scenario)
             {
                 yield break;
             }
@@ -32,7 +32,7 @@ namespace TrainingScenarios.Runtime.Validation.Rules.Activation
             ScenarioModeProfile profile,
             string profileName)
         {
-            if (profile == null)
+            if (!profile)
             {
                 yield break;
             }
@@ -60,7 +60,7 @@ namespace TrainingScenarios.Runtime.Validation.Rules.Activation
             var knownSteps = new HashSet<StepDefinition>();
             foreach (var step in scenario.Steps)
             {
-                if (step != null)
+                if (step)
                 {
                     knownSteps.Add(step);
                 }
@@ -86,7 +86,7 @@ namespace TrainingScenarios.Runtime.Validation.Rules.Activation
                 for (var stepIndex = 0; stepIndex < stage.Steps.Count; stepIndex++)
                 {
                     var step = stage.Steps[stepIndex];
-                    if (step == null)
+                    if (!step)
                     {
                         yield return new ValidationIssue(
                             "ACTIVATION_STEP_REFERENCE_MISSING",

@@ -8,7 +8,7 @@ namespace TrainingScenarios.Runtime.Validation.Rules.Scenario
     {
         public IEnumerable<ValidationIssue> Validate(ScenarioValidationContext context)
         {
-            if (context.Scenario == null)
+            if (!context.Scenario)
             {
                 yield return new ValidationIssue(
                     "SCENARIO_MISSING",

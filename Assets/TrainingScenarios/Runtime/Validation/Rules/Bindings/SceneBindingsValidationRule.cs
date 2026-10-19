@@ -12,12 +12,12 @@ namespace TrainingScenarios.Runtime.Validation.Rules.Bindings
         public IEnumerable<ValidationIssue> Validate(ScenarioValidationContext context)
         {
             var scenario = context.Scenario;
-            if (scenario == null)
+            if (!scenario)
             {
                 yield break;
             }
 
-            if (context.SceneBindings == null)
+            if (!context.SceneBindings)
             {
                 yield return new ValidationIssue(
                     "SCENE_BINDING_REGISTRY_MISSING",
@@ -30,7 +30,7 @@ namespace TrainingScenarios.Runtime.Validation.Rules.Bindings
             var bindingIds = new HashSet<string>(StringComparer.Ordinal);
             foreach (var binding in context.SceneBindings.Bindings)
             {
-                if (binding == null)
+                if (!binding)
                 {
                     yield return new ValidationIssue(
                         "SCENE_BINDING_REFERENCE_MISSING",
@@ -62,7 +62,7 @@ namespace TrainingScenarios.Runtime.Validation.Rules.Bindings
 
             foreach (var step in scenario.Steps)
             {
-                if (step == null ||
+                if (!step ||
                     !(step.RuleDefinition is ISceneBindingRequirementProvider requirements))
                 {
                     continue;

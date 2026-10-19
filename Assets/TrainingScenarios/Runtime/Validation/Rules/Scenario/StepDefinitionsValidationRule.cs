@@ -10,7 +10,7 @@ namespace TrainingScenarios.Runtime.Validation.Rules.Scenario
         public IEnumerable<ValidationIssue> Validate(ScenarioValidationContext context)
         {
             var scenario = context.Scenario;
-            if (scenario == null)
+            if (!scenario)
             {
                 yield break;
             }
@@ -30,7 +30,7 @@ namespace TrainingScenarios.Runtime.Validation.Rules.Scenario
             for (var index = 0; index < scenario.Steps.Count; index++)
             {
                 var step = scenario.Steps[index];
-                if (step == null)
+                if (!step)
                 {
                     yield return new ValidationIssue(
                         "STEP_REFERENCE_MISSING",

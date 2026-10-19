@@ -11,7 +11,7 @@ namespace TrainingScenarios.Runtime.Validation.Rules.Exam
         public IEnumerable<ValidationIssue> Validate(ScenarioValidationContext context)
         {
             var scenario = context.Scenario;
-            if (scenario == null || scenario.ExamProfile == null)
+            if (!scenario || !scenario.ExamProfile)
             {
                 yield break;
             }
@@ -38,7 +38,7 @@ namespace TrainingScenarios.Runtime.Validation.Rules.Exam
             var knownSteps = new HashSet<StepDefinition>();
             foreach (var step in scenario.Steps)
             {
-                if (step != null)
+                if (step)
                 {
                     knownSteps.Add(step);
                 }
@@ -79,7 +79,7 @@ namespace TrainingScenarios.Runtime.Validation.Rules.Exam
 
                 foreach (var step in group.Steps)
                 {
-                    if (step == null)
+                    if (!step)
                     {
                         yield return new ValidationIssue(
                             "EXAM_GROUP_STEP_REFERENCE_MISSING",

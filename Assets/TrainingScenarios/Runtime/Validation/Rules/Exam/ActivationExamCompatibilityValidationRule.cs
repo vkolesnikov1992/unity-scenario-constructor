@@ -11,8 +11,8 @@ namespace TrainingScenarios.Runtime.Validation.Rules.Exam
         public IEnumerable<ValidationIssue> Validate(ScenarioValidationContext context)
         {
             var scenario = context.Scenario;
-            if (scenario == null ||
-                scenario.ExamProfile == null ||
+            if (!scenario ||
+                !scenario.ExamProfile ||
                 scenario.ExamProfile.ActivationPlan == null)
             {
                 yield break;
@@ -35,7 +35,7 @@ namespace TrainingScenarios.Runtime.Validation.Rules.Exam
                 var stageGroupIndices = new HashSet<int>();
                 foreach (var step in stage.Steps)
                 {
-                    if (step != null && groupIndexByStep.TryGetValue(step, out var groupIndex))
+                    if (step && groupIndexByStep.TryGetValue(step, out var groupIndex))
                     {
                         stageGroupIndices.Add(groupIndex);
                     }
@@ -84,7 +84,7 @@ namespace TrainingScenarios.Runtime.Validation.Rules.Exam
 
                 foreach (var step in group.Steps)
                 {
-                    if (step != null && !result.ContainsKey(step))
+                    if (step && !result.ContainsKey(step))
                     {
                         result.Add(step, groupIndex);
                     }
