@@ -40,6 +40,8 @@ namespace TrainingScenarios.Runtime.Execution.Runner
 
         public event Action<ScenarioAction> ActionReceived;
 
+        public event Action<StepActionEvaluation> StepEvaluated;
+
         public event Action<StepActionResult> StepActionProcessed;
 
         public ScenarioSession Session => _session;
@@ -85,6 +87,12 @@ namespace TrainingScenarios.Runtime.Execution.Runner
                 }
 
                 var evaluation = candidate.Step.RuleRuntime.Evaluate(action, _context);
+                StepEvaluated?.Invoke(new StepActionEvaluation(
+                    action,
+                    candidate.Step.DefinitionId,
+                    evaluation,
+                    candidate.Status));
+
                 _modePolicy.ApplyEvaluation(_session, candidate.Step, evaluation);
 
                 StepActionProcessed?.Invoke(new StepActionResult(
@@ -131,10 +139,17 @@ namespace TrainingScenarios.Runtime.Execution.Runner
                 return;
             }
 
+            var evaluation = StepEvaluation.Violation(InactiveActionReason);
+            StepEvaluated?.Invoke(new StepActionEvaluation(
+                action,
+                step.DefinitionId,
+                evaluation,
+                StepStatus.Inactive));
+
             StepActionProcessed?.Invoke(new StepActionResult(
                 action,
                 step.DefinitionId,
-                StepEvaluation.Violation(InactiveActionReason),
+                evaluation,
                 StepStatus.Inactive,
                 StepStatus.Inactive));
         }
