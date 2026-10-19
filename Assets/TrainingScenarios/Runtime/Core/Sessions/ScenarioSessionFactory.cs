@@ -11,8 +11,8 @@ namespace TrainingScenarios.Runtime.Core.Sessions
         private readonly Func<string> _sessionIdFactory;
 
         public ScenarioSessionFactory(
-            Func<DateTimeOffset> utcNow = default,
-            Func<string> sessionIdFactory = default)
+            Func<DateTimeOffset> utcNow = null,
+            Func<string> sessionIdFactory = null)
         {
             _utcNow = utcNow ?? (() => DateTimeOffset.UtcNow);
             _sessionIdFactory = sessionIdFactory ?? (() => Guid.NewGuid().ToString("N"));

@@ -1,4 +1,4 @@
-namespace TrainingScenarios.Runtime.Rules
+namespace TrainingScenarios.Runtime.Rules.Models
 {
     public sealed class StepEvaluation
     {
@@ -15,6 +15,11 @@ namespace TrainingScenarios.Runtime.Rules
         public static StepEvaluation Success(string reason = null)
         {
             return new StepEvaluation(StepEvaluationOutcome.Success, reason);
+        }
+
+        public static StepEvaluation Progress(string reason = null)
+        {
+            return new StepEvaluation(StepEvaluationOutcome.Progress, reason);
         }
 
         public static StepEvaluation Violation(string reason)

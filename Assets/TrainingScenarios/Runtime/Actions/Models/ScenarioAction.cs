@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace TrainingScenarios.Runtime.Actions
+namespace TrainingScenarios.Runtime.Actions.Models
 {
     public sealed class ScenarioAction
     {
@@ -14,7 +14,7 @@ namespace TrainingScenarios.Runtime.Actions
             string actionType,
             string targetId,
             DateTimeOffset timestamp,
-            IReadOnlyDictionary<string, string> additionalData = default)
+            IReadOnlyDictionary<string, string> additionalData = null)
         {
             SourceId = sourceId;
             ActionType = actionType;

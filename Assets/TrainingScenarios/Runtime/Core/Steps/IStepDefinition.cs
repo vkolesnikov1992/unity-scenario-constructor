@@ -1,4 +1,4 @@
-using TrainingScenarios.Runtime.Rules;
+using TrainingScenarios.Runtime.Rules.Contracts;
 
 namespace TrainingScenarios.Runtime.Core.Steps
 {

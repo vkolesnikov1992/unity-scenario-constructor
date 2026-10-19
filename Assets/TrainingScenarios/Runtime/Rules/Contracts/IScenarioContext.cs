@@ -1,4 +1,4 @@
-namespace TrainingScenarios.Runtime.Rules
+namespace TrainingScenarios.Runtime.Rules.Contracts
 {
     public interface IScenarioContext
     {
