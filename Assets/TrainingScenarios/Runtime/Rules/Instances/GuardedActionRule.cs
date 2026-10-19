@@ -27,6 +27,11 @@ namespace TrainingScenarios.Runtime.Rules.Instances
             _unexpectedActionReason = unexpectedActionReason;
         }
 
+        public bool IsRelated(ScenarioAction action)
+        {
+            return _expectedAction.IsRelated(action);
+        }
+
         public StepEvaluation Evaluate(ScenarioAction action, IScenarioContext context)
         {
             if (!_expectedAction.Matches(action))

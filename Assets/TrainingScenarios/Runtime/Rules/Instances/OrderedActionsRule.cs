@@ -25,6 +25,11 @@ namespace TrainingScenarios.Runtime.Rules.Instances
             _unexpectedActionReason = unexpectedActionReason;
         }
 
+        public bool IsRelated(ScenarioAction action)
+        {
+            return _firstAction.IsRelated(action) || _secondAction.IsRelated(action);
+        }
+
         public StepEvaluation Evaluate(ScenarioAction action, IScenarioContext context)
         {
             if (_firstAction.Matches(action))
@@ -43,11 +48,6 @@ namespace TrainingScenarios.Runtime.Rules.Instances
             return IsRelated(action)
                 ? StepEvaluation.Violation(_unexpectedActionReason)
                 : StepEvaluation.NotRelevant();
-        }
-
-        private bool IsRelated(ScenarioAction action)
-        {
-            return _firstAction.IsRelated(action) || _secondAction.IsRelated(action);
         }
     }
 }
