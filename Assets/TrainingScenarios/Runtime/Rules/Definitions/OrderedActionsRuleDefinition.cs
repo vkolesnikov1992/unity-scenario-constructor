@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using TrainingScenarios.Runtime.Actions.Models;
 using TrainingScenarios.Runtime.Rules.Contracts;
@@ -7,7 +8,9 @@ using TrainingScenarios.Runtime.Rules.Instances;
 namespace TrainingScenarios.Runtime.Rules.Definitions
 {
     [Serializable]
-    public sealed class OrderedActionsRuleDefinition : IStepRuleDefinition
+    public sealed class OrderedActionsRuleDefinition :
+        IStepRuleDefinition,
+        ISceneBindingRequirementProvider
     {
         [SerializeField]
         private ActionRequirement _firstAction = new ActionRequirement();
@@ -49,6 +52,19 @@ namespace TrainingScenarios.Runtime.Rules.Definitions
                 _secondAction,
                 _orderViolationReason,
                 _unexpectedActionReason);
+        }
+
+        public IEnumerable<string> GetRequiredBindingIds()
+        {
+            if (_firstAction != null)
+            {
+                yield return _firstAction.SourceId;
+            }
+
+            if (_secondAction != null)
+            {
+                yield return _secondAction.SourceId;
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using TrainingScenarios.Runtime.Actions.Models;
 using TrainingScenarios.Runtime.Rules.Contracts;
@@ -7,7 +8,9 @@ using TrainingScenarios.Runtime.Rules.Instances;
 namespace TrainingScenarios.Runtime.Rules.Definitions
 {
     [Serializable]
-    public sealed class SingleActionRuleDefinition : IStepRuleDefinition
+    public sealed class SingleActionRuleDefinition :
+        IStepRuleDefinition,
+        ISceneBindingRequirementProvider
     {
         [SerializeField]
         private ActionRequirement _expectedAction = new ActionRequirement();
@@ -33,6 +36,14 @@ namespace TrainingScenarios.Runtime.Rules.Definitions
         public IStepRule CreateRuntime()
         {
             return new SingleActionRule(_expectedAction, _violationReason);
+        }
+
+        public IEnumerable<string> GetRequiredBindingIds()
+        {
+            if (_expectedAction != null)
+            {
+                yield return _expectedAction.SourceId;
+            }
         }
     }
 }

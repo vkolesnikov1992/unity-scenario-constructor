@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using TrainingScenarios.Runtime.Actions.Models;
 using TrainingScenarios.Runtime.Rules.Contracts;
@@ -7,7 +8,9 @@ using TrainingScenarios.Runtime.Rules.Instances;
 namespace TrainingScenarios.Runtime.Rules.Definitions
 {
     [Serializable]
-    public sealed class GuardedActionRuleDefinition : IStepRuleDefinition
+    public sealed class GuardedActionRuleDefinition :
+        IStepRuleDefinition,
+        ISceneBindingRequirementProvider
     {
         [SerializeField]
         private ActionRequirement _expectedAction = new ActionRequirement();
@@ -56,6 +59,16 @@ namespace TrainingScenarios.Runtime.Rules.Definitions
                 _requiredStateValue,
                 _guardViolationReason,
                 _unexpectedActionReason);
+        }
+
+        public IEnumerable<string> GetRequiredBindingIds()
+        {
+            if (_expectedAction != null)
+            {
+                yield return _expectedAction.SourceId;
+            }
+
+            yield return _requiredStateId;
         }
     }
 }

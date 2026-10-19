@@ -37,6 +37,11 @@ namespace TrainingScenarios.Runtime.Actions.Bindings
                     continue;
                 }
 
+                if (_bindingsById.ContainsKey(binding.BindingId))
+                {
+                    continue;
+                }
+
                 _bindingsById.Add(binding.BindingId, binding);
 
                 if (binding is IActionSource actionSource)
