@@ -31,5 +31,16 @@ namespace TrainingScenarios.Runtime.Execution.Modes.Training
                     break;
             }
         }
+
+        public void ApplyInactiveEvaluation(
+            ScenarioSession session,
+            StepRuntime step,
+            StepEvaluation evaluation)
+        {
+            if (evaluation.Outcome == StepEvaluationOutcome.Violation)
+            {
+                session.RecordInactiveViolation(step.DefinitionId);
+            }
+        }
     }
 }

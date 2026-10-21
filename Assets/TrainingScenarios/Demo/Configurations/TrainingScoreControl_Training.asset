@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f8a1d98230ee104ab934f5e2bf39ef0, type: 3}
+  m_Name: TrainingScoreControl_Training
+  m_EditorClassIdentifier: TrainingScenarios.Runtime::TrainingScenarios.Runtime.Configuration.Profiles.TrainingModeProfile
+  _activationPlan:
+    _stages:
+    - _steps:
+      - {fileID: 11400000, guid: 749367a6d86d32547a52f1e454262128, type: 2}
+      - {fileID: 11400000, guid: 2613d3683f2a99d4a93850674bc5592b, type: 2}
+      - {fileID: 11400000, guid: b798bc1cadd1c0242ae14d8c3d728b19, type: 2}
+  _inactiveActionBehavior: 0
+  _analyzerProvider: {fileID: 11400000, guid: a4d60571519679d4081f0c52d57e3def, type: 2}
+  _firstAttemptScore: 10
+  _secondAttemptScore: 5
+  _laterAttemptScore: 0
+  _maximumPerStep: 10

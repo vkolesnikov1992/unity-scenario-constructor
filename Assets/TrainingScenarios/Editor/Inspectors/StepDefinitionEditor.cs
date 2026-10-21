@@ -1,6 +1,9 @@
+using System;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using TrainingScenarios.Runtime.Configuration.Definitions;
+using TrainingScenarios.Runtime.Rules.Contracts;
 using TrainingScenarios.Runtime.Rules.Definitions;
 
 namespace TrainingScenarios.Editor.Inspectors
@@ -9,10 +12,20 @@ namespace TrainingScenarios.Editor.Inspectors
     public sealed class StepDefinitionEditor : UnityEditor.Editor
     {
         private SerializedProperty _ruleDefinition;
+        private Type[] _ruleDefinitionTypes = Array.Empty<Type>();
 
         private void OnEnable()
         {
             _ruleDefinition = serializedObject.FindProperty("_ruleDefinition");
+            _ruleDefinitionTypes = TypeCache
+                .GetTypesDerivedFrom<IStepRuleDefinition>()
+                .Where(type =>
+                    type.IsClass &&
+                    !type.IsAbstract &&
+                    type.IsSerializable &&
+                    type.GetConstructor(Type.EmptyTypes) != null)
+                .OrderBy(type => type.FullName, StringComparer.Ordinal)
+                .ToArray();
         }
 
         public override void OnInspectorGUI()
@@ -54,18 +67,16 @@ namespace TrainingScenarios.Editor.Inspectors
             }
 
             var menu = new GenericMenu();
-            menu.AddItem(
-                new GUIContent("Single Action"),
-                _ruleDefinition.managedReferenceValue is SingleActionRuleDefinition,
-                () => AssignRule(new SingleActionRuleDefinition()));
-            menu.AddItem(
-                new GUIContent("Ordered Actions"),
-                _ruleDefinition.managedReferenceValue is OrderedActionsRuleDefinition,
-                () => AssignRule(new OrderedActionsRuleDefinition()));
-            menu.AddItem(
-                new GUIContent("Guarded Action"),
-                _ruleDefinition.managedReferenceValue is GuardedActionRuleDefinition,
-                () => AssignRule(new GuardedActionRuleDefinition()));
+            var currentType = _ruleDefinition.managedReferenceValue?.GetType();
+            foreach (var ruleType in _ruleDefinitionTypes)
+            {
+                var capturedType = ruleType;
+                menu.AddItem(
+                    new GUIContent(GetRuleName(capturedType)),
+                    currentType == capturedType,
+                    () => AssignRule(Activator.CreateInstance(capturedType)));
+            }
+
             menu.AddSeparator(string.Empty);
             menu.AddItem(
                 new GUIContent("Not Assigned"),
@@ -104,9 +115,20 @@ namespace TrainingScenarios.Editor.Inspectors
                     DrawRelativeProperty("_unexpectedActionReason", "Unexpected Action Reason");
                     break;
                 default:
-                    EditorGUILayout.HelpBox(
-                        "Select a completion rule for the step.",
-                        MessageType.Warning);
+                    if (_ruleDefinition.managedReferenceValue == null)
+                    {
+                        EditorGUILayout.HelpBox(
+                            "Select a completion rule for the step.",
+                            MessageType.Warning);
+                    }
+                    else
+                    {
+                        EditorGUILayout.PropertyField(
+                            _ruleDefinition,
+                            GUIContent.none,
+                            true);
+                    }
+
                     break;
             }
         }
@@ -137,17 +159,17 @@ namespace TrainingScenarios.Editor.Inspectors
 
         private string GetRuleName()
         {
-            switch (_ruleDefinition.managedReferenceValue)
-            {
-                case SingleActionRuleDefinition:
-                    return "Single Action";
-                case OrderedActionsRuleDefinition:
-                    return "Ordered Actions";
-                case GuardedActionRuleDefinition:
-                    return "Guarded Action";
-                default:
-                    return "Select Rule";
-            }
+            var rule = _ruleDefinition.managedReferenceValue;
+            return rule == null ? "Select Rule" : GetRuleName(rule.GetType());
+        }
+
+        private static string GetRuleName(Type type)
+        {
+            const string suffix = "RuleDefinition";
+            var typeName = type.Name.EndsWith(suffix, StringComparison.Ordinal)
+                ? type.Name.Substring(0, type.Name.Length - suffix.Length)
+                : type.Name;
+            return ObjectNames.NicifyVariableName(typeName);
         }
 
         private void AssignRule(object ruleDefinition)

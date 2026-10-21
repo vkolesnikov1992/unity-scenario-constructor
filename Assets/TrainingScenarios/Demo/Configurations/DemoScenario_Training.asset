@@ -13,7 +13,31 @@ MonoBehaviour:
   m_Name: DemoScenario_Training
   m_EditorClassIdentifier: TrainingScenarios.Runtime::TrainingScenarios.Runtime.Configuration.Profiles.TrainingModeProfile
   _activationPlan:
-    _stages: []
+    _stages:
+    - _steps:
+      - {fileID: 11400000, guid: e041f15d8693af54097099bbab93ad27, type: 2}
+    - _steps:
+      - {fileID: 11400000, guid: 749367a6d86d32547a52f1e454262128, type: 2}
+    - _steps:
+      - {fileID: 11400000, guid: 2613d3683f2a99d4a93850674bc5592b, type: 2}
+    - _steps:
+      - {fileID: 11400000, guid: b798bc1cadd1c0242ae14d8c3d728b19, type: 2}
+    - _steps:
+      - {fileID: 11400000, guid: a8cc20f6f6b1e0443b11eabc819a1cca, type: 2}
+    - _steps:
+      - {fileID: 11400000, guid: 537c78c7a0a47f444bcf58b23363182e, type: 2}
+    - _steps:
+      - {fileID: 11400000, guid: d8d91c0215297e34db3a8968598e9637, type: 2}
+    - _steps:
+      - {fileID: 11400000, guid: 00e1b02ce3383b740bfacc57a85d7689, type: 2}
+    - _steps:
+      - {fileID: 11400000, guid: 5c09592e7921aed4caa1ab6320f5ee3e, type: 2}
+    - _steps:
+      - {fileID: 11400000, guid: 2b7988e02f9a2eb46815285fddd339e8, type: 2}
+    - _steps:
+      - {fileID: 11400000, guid: f260de5030c5b744ab5f99e586439026, type: 2}
+    - _steps:
+      - {fileID: 11400000, guid: 6c8985898ea8f384aaa074e7ea6dde6f, type: 2}
   _inactiveActionBehavior: 0
   _analyzerProvider: {fileID: 11400000, guid: a4d60571519679d4081f0c52d57e3def, type: 2}
   _firstAttemptScore: 10

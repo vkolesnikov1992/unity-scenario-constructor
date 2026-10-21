@@ -73,11 +73,16 @@ namespace TrainingScenarios.Runtime.Execution.Runner
             ActionReceived?.Invoke(action);
 
             var candidates = FindCandidates(action);
-            foreach (var candidate in candidates)
+            foreach (var candidate in candidates.OrderBy(candidate =>
+                         candidate.Status == StepStatus.Inactive ? 0 : 1))
             {
                 if (candidate.Status == StepStatus.Inactive)
                 {
-                    ProcessInactiveAction(action, candidate.Step);
+                    if (candidate.Step.Status == StepStatus.Inactive)
+                    {
+                        ProcessInactiveAction(action, candidate.Step);
+                    }
+
                     continue;
                 }
 
@@ -146,12 +151,14 @@ namespace TrainingScenarios.Runtime.Execution.Runner
                 evaluation,
                 StepStatus.Inactive));
 
+            _modePolicy.ApplyInactiveEvaluation(_session, step, evaluation);
+
             StepActionProcessed?.Invoke(new StepActionResult(
                 action,
                 step.DefinitionId,
                 evaluation,
                 StepStatus.Inactive,
-                StepStatus.Inactive));
+                step.Status));
         }
 
         private void HandleSessionStatusChanged(ScenarioSessionStatus status)

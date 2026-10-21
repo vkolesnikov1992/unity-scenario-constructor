@@ -5,6 +5,7 @@ using TrainingScenarios.Runtime.Validation.Rules.Bindings;
 using TrainingScenarios.Runtime.Validation.Rules.Exam;
 using TrainingScenarios.Runtime.Validation.Rules.Providers;
 using TrainingScenarios.Runtime.Validation.Rules.Scenario;
+using TrainingScenarios.Runtime.Validation.Rules.Scoring;
 
 namespace TrainingScenarios.Runtime.Validation.Composition
 {
@@ -19,6 +20,7 @@ namespace TrainingScenarios.Runtime.Validation.Composition
                 new ActivationPlanValidationRule(),
                 new ExamGroupsValidationRule(),
                 new ActivationExamCompatibilityValidationRule(),
+                new ScoringValidationRule(),
                 new SceneBindingsValidationRule(),
                 new ProviderValidationRule()
             };

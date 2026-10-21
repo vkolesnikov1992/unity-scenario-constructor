@@ -13,7 +13,7 @@ namespace TrainingScenarios.Runtime.Configuration.Profiles
     [CreateAssetMenu(
         fileName = "ExamModeProfile",
         menuName = "Training Scenarios/Profiles/Exam")]
-    public sealed class ExamModeProfile : ScenarioModeProfile
+    public class ExamModeProfile : ScenarioModeProfile
     {
         [SerializeField]
         private List<ExamGroupConfiguration> _groups =

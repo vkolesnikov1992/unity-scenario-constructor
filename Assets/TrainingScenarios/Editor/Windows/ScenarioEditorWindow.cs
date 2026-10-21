@@ -1,6 +1,10 @@
+using System.Linq;
 using UnityEditor;
+using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using TrainingScenarios.Editor.Creation;
+using TrainingScenarios.Runtime.Composition;
 using TrainingScenarios.Runtime.Configuration.Definitions;
 
 namespace TrainingScenarios.Editor.Windows
@@ -294,6 +298,15 @@ namespace TrainingScenarios.Editor.Windows
                 Repaint();
             }
 
+            using (new EditorGUI.DisabledScope(!_scenario))
+            {
+                if (GUILayout.Button("Simple Flow", EditorStyles.toolbarButton))
+                {
+                    ApplyAllModifiedProperties();
+                    ScenarioFlowEditorWindow.Open(_scenario);
+                }
+            }
+
             GUILayout.FlexibleSpace();
 
             using (new EditorGUI.DisabledScope(
@@ -301,13 +314,58 @@ namespace TrainingScenarios.Editor.Windows
                        _validationPanel.HasErrors ||
                        EditorApplication.isPlayingOrWillChangePlaymode))
             {
-                if (GUILayout.Button("Enter Play Mode", EditorStyles.toolbarButton))
+                if (GUILayout.Button("Play Selected Scenario", EditorStyles.toolbarButton))
                 {
-                    EditorApplication.isPlaying = true;
+                    StartSelectedScenario();
                 }
             }
 
             EditorGUILayout.EndHorizontal();
+        }
+
+        private void StartSelectedScenario()
+        {
+            ApplyAllModifiedProperties();
+            var activeScene = SceneManager.GetActiveScene();
+            var contexts = Object.FindObjectsByType<ScenarioSceneContext>(
+                    FindObjectsInactive.Include,
+                    FindObjectsSortMode.None)
+                .Where(context => context.gameObject.scene == activeScene)
+                .ToArray();
+
+            if (contexts.Length != 1)
+            {
+                var message = contexts.Length == 0
+                    ? "The active scene has no ScenarioSceneContext. Add one before starting the scenario."
+                    : "The active scene has multiple ScenarioSceneContext components. Leave exactly one before starting the scenario.";
+                EditorUtility.DisplayDialog("Cannot Start Scenario", message, "OK");
+                return;
+            }
+
+            _validationPanel.Validate(_scenario, contexts[0].SceneBindings);
+            if (_validationPanel.HasErrors)
+            {
+                Repaint();
+                return;
+            }
+
+            var contextObject = new SerializedObject(contexts[0]);
+            var scenarioProperty = contextObject.FindProperty("_scenario");
+            if (scenarioProperty.objectReferenceValue != _scenario)
+            {
+                Undo.RecordObject(contexts[0], "Bind selected scenario to scene");
+                scenarioProperty.objectReferenceValue = _scenario;
+                contextObject.ApplyModifiedProperties();
+                EditorSceneManager.MarkSceneDirty(activeScene);
+            }
+
+            if (activeScene.isDirty &&
+                !EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+            {
+                return;
+            }
+
+            EditorApplication.isPlaying = true;
         }
 
         private void ApplyAllModifiedProperties()

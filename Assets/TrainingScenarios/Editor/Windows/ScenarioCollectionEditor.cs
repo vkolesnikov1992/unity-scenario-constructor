@@ -12,6 +12,7 @@ namespace TrainingScenarios.Editor.Windows
     {
         private const float RowSpacing = 4f;
         private const float StepDragHandleWidth = 22f;
+        private const float HeaderButtonWidth = 118f;
         private const string StepDragKey = "TrainingScenarios.StepDrag";
 
         private readonly Action _configurationChanged;
@@ -46,10 +47,10 @@ namespace TrainingScenarios.Editor.Windows
                 : CreateScenarioStepsList(scenarioObject);
             _trainingStagesList = trainingProfileObject == null
                 ? null
-                : CreateStagesList(trainingProfileObject, "Training Activation Stages");
+                : CreateStagesList(trainingProfileObject, "Training Flow");
             _examStagesList = examProfileObject == null
                 ? null
-                : CreateStagesList(examProfileObject, "Exam Activation Stages");
+                : CreateStagesList(examProfileObject, "Exam Flow");
             _examGroupsList = examProfileObject == null
                 ? null
                 : CreateGroupsList(examProfileObject);
@@ -68,6 +69,10 @@ namespace TrainingScenarios.Editor.Windows
 
         public void DrawScenarioSteps()
         {
+            EditorGUILayout.HelpBox(
+                "Use + to create a step or add existing step assets. Drag the left grip to " +
+                "reorder the catalog; drag the arrow on the right into a flow stage or exam group.",
+                MessageType.Info);
             DrawList(_scenarioStepsList, StepCollectionKind.Scenario);
         }
 
@@ -116,17 +121,13 @@ namespace TrainingScenarios.Editor.Windows
                 true,
                 true);
             list.drawHeaderCallback = rect =>
-                EditorGUI.LabelField(rect, "Scenario Steps");
+                EditorGUI.LabelField(rect, "Scenario Step Catalog");
             list.drawElementCallback = (rect, index, _, _) =>
-            {
-                rect.y += 1f;
-                rect.height = EditorGUIUtility.singleLineHeight;
-                EditorGUI.PropertyField(
-                    rect,
-                    steps.GetArrayElementAtIndex(index),
-                    new GUIContent($"Step {index + 1}"));
-            };
-            list.onAddCallback = _ => AppendObjectReference(steps, null, "Add Step");
+                DrawStepElement(rect, list, index, StepCollectionKind.Scenario);
+            list.onAddDropdownCallback = (rect, _) => ShowScenarioStepMenu(
+                rect,
+                scenarioObject.targetObject,
+                steps.propertyPath);
             list.onRemoveCallback = currentList =>
                 RemoveArrayElement(currentList.serializedProperty, currentList.index, "Remove Step");
             list.onReorderCallback = _ => NotifyConfigurationChanged();
@@ -147,7 +148,7 @@ namespace TrainingScenarios.Editor.Windows
                 true,
                 true,
                 true);
-            list.drawHeaderCallback = rect => EditorGUI.LabelField(rect, title);
+            list.drawHeaderCallback = rect => DrawStagesHeader(rect, title, stages);
             list.elementHeightCallback = index =>
             {
                 var stage = stages.GetArrayElementAtIndex(index);
@@ -308,7 +309,8 @@ namespace TrainingScenarios.Editor.Windows
             list.onAddDropdownCallback = (rect, _) => ShowStepMenu(
                 rect,
                 owner,
-                propertyPath);
+                propertyPath,
+                collectionKind);
             list.onRemoveCallback = currentList => RemoveArrayElement(
                 currentList.serializedProperty,
                 currentList.index,
@@ -337,8 +339,29 @@ namespace TrainingScenarios.Editor.Windows
                 rect.width - StepDragHandleWidth - 2f,
                 rect.height);
             var step = list.serializedProperty.GetArrayElementAtIndex(index);
-            EditorGUI.PropertyField(fieldRect, step, GUIContent.none);
-            EditorGUI.LabelField(handleRect, "⇄", EditorStyles.centeredGreyMiniLabel);
+            var stepDefinition = step.objectReferenceValue as StepDefinition;
+            if (stepDefinition)
+            {
+                var content = new GUIContent(
+                    GetStepLabel(stepDefinition),
+                    $"{AssetDatabase.GetAssetPath(stepDefinition)}\nClick to select the asset.");
+                if (GUI.Button(fieldRect, content, EditorStyles.label))
+                {
+                    Selection.activeObject = stepDefinition;
+                    EditorGUIUtility.PingObject(stepDefinition);
+                }
+
+                EditorGUIUtility.AddCursorRect(fieldRect, MouseCursor.Link);
+            }
+            else
+            {
+                EditorGUI.PropertyField(fieldRect, step, GUIContent.none);
+            }
+
+            var handleContent = collectionKind == StepCollectionKind.Scenario
+                ? new GUIContent("→", "Drag this step into a flow stage or exam group.")
+                : new GUIContent("⇄", "Drag this step to another row or collection.");
+            EditorGUI.LabelField(handleRect, handleContent, EditorStyles.centeredGreyMiniLabel);
             EditorGUIUtility.AddCursorRect(handleRect, MouseCursor.Pan);
 
             HandleStepDragStart(
@@ -411,15 +434,23 @@ namespace TrainingScenarios.Editor.Windows
             var draggedSteps = DragAndDrop.objectReferences
                 .OfType<StepDefinition>()
                 .ToArray();
-            var canAcceptInternal = dragData != null && dragData.Kind == destinationKind;
-            var canAcceptExternal = dragData == null && draggedSteps.Length > 0;
+            var destinationOwner = destination.serializedObject.targetObject;
+            var canMoveInternal = dragData != null &&
+                                  dragData.Kind == destinationKind &&
+                                  dragData.Owner == destinationOwner;
+            var copyableSteps = draggedSteps
+                .Where(step =>
+                    IsScenarioStep(step) &&
+                    !IsAssignedToCollection(destinationOwner, destinationKind, step))
+                .ToArray();
+            var canCopy = !canMoveInternal && copyableSteps.Length > 0;
 
-            if (!canAcceptInternal && !canAcceptExternal)
+            if (!canMoveInternal && !canCopy)
             {
                 return;
             }
 
-            DragAndDrop.visualMode = canAcceptInternal
+            DragAndDrop.visualMode = canMoveInternal
                 ? DragAndDropVisualMode.Move
                 : DragAndDropVisualMode.Copy;
 
@@ -436,13 +467,13 @@ namespace TrainingScenarios.Editor.Windows
                 destination.arraySize,
                 currentEvent.mousePosition.y);
 
-            if (canAcceptInternal)
+            if (canMoveInternal)
             {
                 MoveStep(dragData, destination, destinationIndex);
             }
             else
             {
-                foreach (var step in draggedSteps)
+                foreach (var step in copyableSteps)
                 {
                     InsertObjectReference(destination, destinationIndex, step);
                     destinationIndex++;
@@ -480,12 +511,10 @@ namespace TrainingScenarios.Editor.Windows
             if (currentEvent.type == EventType.DragPerform)
             {
                 DragAndDrop.AcceptDrag();
-                foreach (var step in steps)
-                {
-                    AppendObjectReference(destination, step, "Add Scenario Steps");
-                }
-
-                NotifyConfigurationChanged();
+                AppendSteps(
+                    destination.serializedObject.targetObject,
+                    destination.propertyPath,
+                    steps);
             }
 
             currentEvent.Use();
@@ -586,25 +615,75 @@ namespace TrainingScenarios.Editor.Windows
             return Mathf.Clamp(Mathf.FloorToInt(relativeY / rowHeight), 0, count);
         }
 
-        private void ShowStepMenu(Rect rect, UnityEngine.Object owner, string propertyPath)
+        private void ShowScenarioStepMenu(
+            Rect rect,
+            UnityEngine.Object owner,
+            string propertyPath)
         {
             var menu = new GenericMenu();
-            var availableSteps = _scenario.Steps.Where(step => step).ToArray();
+            menu.AddItem(
+                new GUIContent("Create New Step..."),
+                false,
+                () => CreateStepAndAppend(owner, propertyPath));
+
+            var assignedSteps = new HashSet<StepDefinition>(
+                _scenario.Steps.Where(step => step));
+            var availableSteps = FindProjectSteps()
+                .Where(step => !assignedSteps.Contains(step))
+                .ToArray();
+
+            menu.AddSeparator(string.Empty);
+            if (availableSteps.Length == 0)
+            {
+                menu.AddDisabledItem(new GUIContent("All Project Steps Are Added"));
+            }
+            else
+            {
+                menu.AddItem(
+                    new GUIContent($"Add All Unassigned ({availableSteps.Length})"),
+                    false,
+                    () => AppendSteps(owner, propertyPath, availableSteps));
+                menu.AddSeparator(string.Empty);
+
+                foreach (var step in availableSteps)
+                {
+                    var currentStep = step;
+                    menu.AddItem(
+                        new GUIContent($"Existing/{GetStepLabel(step)}"),
+                        false,
+                        () => AppendStep(owner, propertyPath, currentStep));
+                }
+            }
+
+            menu.DropDown(rect);
+        }
+
+        private void ShowStepMenu(
+            Rect rect,
+            UnityEngine.Object owner,
+            string propertyPath,
+            StepCollectionKind collectionKind)
+        {
+            var menu = new GenericMenu();
+            var assignedSteps = GetAssignedSteps(owner, collectionKind);
+            var availableSteps = _scenario.Steps
+                .Where(step => step && !assignedSteps.Contains(step))
+                .ToArray();
 
             if (availableSteps.Length == 0)
             {
-                menu.AddDisabledItem(new GUIContent("The scenario has no steps"));
+                menu.AddDisabledItem(new GUIContent(
+                    _scenario.Steps.Count == 0
+                        ? "The scenario has no steps"
+                        : "All scenario steps are already assigned"));
             }
             else
             {
                 foreach (var step in availableSteps)
                 {
                     var currentStep = step;
-                    var label = string.IsNullOrWhiteSpace(step.DisplayName)
-                        ? step.name
-                        : step.DisplayName;
                     menu.AddItem(
-                        new GUIContent(label),
+                        new GUIContent(GetStepLabel(step)),
                         false,
                         () => AppendStep(owner, propertyPath, currentStep));
                 }
@@ -625,6 +704,204 @@ namespace TrainingScenarios.Editor.Windows
             _nestedStepLists.Clear();
             NotifyConfigurationChanged();
             _repaint();
+        }
+
+        private void AppendSteps(
+            UnityEngine.Object owner,
+            string propertyPath,
+            IReadOnlyList<StepDefinition> steps)
+        {
+            var serializedObject = new SerializedObject(owner);
+            serializedObject.Update();
+            var destination = serializedObject.FindProperty(propertyPath);
+            var existing = new HashSet<StepDefinition>();
+            for (var index = 0; index < destination.arraySize; index++)
+            {
+                if (destination.GetArrayElementAtIndex(index).objectReferenceValue is
+                    StepDefinition step)
+                {
+                    existing.Add(step);
+                }
+            }
+
+            Undo.RecordObject(owner, "Add Scenario Steps");
+            foreach (var step in steps)
+            {
+                if (step && existing.Add(step))
+                {
+                    InsertObjectReferenceWithoutApply(
+                        destination,
+                        destination.arraySize,
+                        step);
+                }
+            }
+
+            serializedObject.ApplyModifiedProperties();
+            EditorUtility.SetDirty(owner);
+            _nestedStepLists.Clear();
+            NotifyConfigurationChanged();
+            _repaint();
+        }
+
+        private void CreateStepAndAppend(UnityEngine.Object owner, string propertyPath)
+        {
+            var path = EditorUtility.SaveFilePanelInProject(
+                "Create Scenario Step",
+                "NewStep",
+                "asset",
+                "Choose where to save the new step definition.");
+            if (string.IsNullOrEmpty(path))
+            {
+                return;
+            }
+
+            var step = ScriptableObject.CreateInstance<StepDefinition>();
+            var serializedStep = new SerializedObject(step);
+            serializedStep.FindProperty("_stepId").stringValue = Guid.NewGuid().ToString("N");
+            serializedStep.FindProperty("_displayName").stringValue =
+                ObjectNames.NicifyVariableName(System.IO.Path.GetFileNameWithoutExtension(path));
+            serializedStep.ApplyModifiedPropertiesWithoutUndo();
+
+            AssetDatabase.CreateAsset(step, AssetDatabase.GenerateUniqueAssetPath(path));
+            Undo.RegisterCreatedObjectUndo(step, "Create Scenario Step");
+            AppendStep(owner, propertyPath, step);
+            Selection.activeObject = step;
+            EditorGUIUtility.PingObject(step);
+        }
+
+        private void DrawStagesHeader(Rect rect, string title, SerializedProperty stages)
+        {
+            var buttonRect = new Rect(
+                rect.xMax - HeaderButtonWidth,
+                rect.y,
+                HeaderButtonWidth,
+                rect.height);
+            var labelRect = new Rect(
+                rect.x,
+                rect.y,
+                rect.width - HeaderButtonWidth - RowSpacing,
+                rect.height);
+
+            EditorGUI.LabelField(labelRect, title);
+            if (GUI.Button(
+                    buttonRect,
+                    new GUIContent(
+                        "Add Unassigned",
+                        "Create one sequential stage for every scenario step not yet in this flow."),
+                    EditorStyles.miniButton))
+            {
+                AddUnassignedStages(stages);
+            }
+        }
+
+        private void AddUnassignedStages(SerializedProperty stages)
+        {
+            var assigned = GetAssignedSteps(
+                stages.serializedObject.targetObject,
+                StepCollectionKind.ActivationStage);
+            var unassigned = _scenario.Steps
+                .Where(step => step && !assigned.Contains(step))
+                .ToArray();
+            if (unassigned.Length == 0)
+            {
+                return;
+            }
+
+            Undo.RecordObject(stages.serializedObject.targetObject, "Add Unassigned Stages");
+            foreach (var step in unassigned)
+            {
+                var stageIndex = stages.arraySize;
+                stages.InsertArrayElementAtIndex(stageIndex);
+                var stageSteps = stages
+                    .GetArrayElementAtIndex(stageIndex)
+                    .FindPropertyRelative("_steps");
+                stageSteps.arraySize = 1;
+                stageSteps.GetArrayElementAtIndex(0).objectReferenceValue = step;
+            }
+
+            stages.serializedObject.ApplyModifiedProperties();
+            EditorUtility.SetDirty(stages.serializedObject.targetObject);
+            _nestedStepLists.Clear();
+            NotifyConfigurationChanged();
+            _repaint();
+        }
+
+        private HashSet<StepDefinition> GetAssignedSteps(
+            UnityEngine.Object owner,
+            StepCollectionKind collectionKind)
+        {
+            var result = new HashSet<StepDefinition>();
+            var serializedObject = new SerializedObject(owner);
+            serializedObject.Update();
+            SerializedProperty collections;
+
+            switch (collectionKind)
+            {
+                case StepCollectionKind.ActivationStage:
+                    collections = serializedObject
+                        .FindProperty("_activationPlan")
+                        ?.FindPropertyRelative("_stages");
+                    break;
+                case StepCollectionKind.ExamGroup:
+                    collections = serializedObject.FindProperty("_groups");
+                    break;
+                default:
+                    return result;
+            }
+
+            if (collections == null)
+            {
+                return result;
+            }
+
+            for (var collectionIndex = 0;
+                 collectionIndex < collections.arraySize;
+                 collectionIndex++)
+            {
+                var steps = collections
+                    .GetArrayElementAtIndex(collectionIndex)
+                    .FindPropertyRelative("_steps");
+                for (var stepIndex = 0; stepIndex < steps.arraySize; stepIndex++)
+                {
+                    if (steps.GetArrayElementAtIndex(stepIndex).objectReferenceValue is
+                        StepDefinition step)
+                    {
+                        result.Add(step);
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        private bool IsAssignedToCollection(
+            UnityEngine.Object owner,
+            StepCollectionKind collectionKind,
+            StepDefinition step)
+        {
+            return GetAssignedSteps(owner, collectionKind).Contains(step);
+        }
+
+        private bool IsScenarioStep(StepDefinition step)
+        {
+            return step && _scenario.Steps.Contains(step);
+        }
+
+        private static StepDefinition[] FindProjectSteps()
+        {
+            return AssetDatabase.FindAssets("t:StepDefinition")
+                .Select(AssetDatabase.GUIDToAssetPath)
+                .OrderBy(path => path, StringComparer.Ordinal)
+                .Select(AssetDatabase.LoadAssetAtPath<StepDefinition>)
+                .Where(step => step)
+                .ToArray();
+        }
+
+        private static string GetStepLabel(StepDefinition step)
+        {
+            return string.IsNullOrWhiteSpace(step.DisplayName)
+                ? step.name
+                : step.DisplayName;
         }
 
         private void AddStage(SerializedProperty stages)

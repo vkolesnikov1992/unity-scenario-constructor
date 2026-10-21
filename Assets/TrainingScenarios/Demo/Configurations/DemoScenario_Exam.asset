@@ -13,10 +13,50 @@ MonoBehaviour:
   m_Name: DemoScenario_Exam
   m_EditorClassIdentifier: TrainingScenarios.Runtime::TrainingScenarios.Runtime.Configuration.Profiles.ExamModeProfile
   _activationPlan:
-    _stages: []
-  _inactiveActionBehavior: 0
+    _stages:
+    - _steps:
+      - {fileID: 11400000, guid: 749367a6d86d32547a52f1e454262128, type: 2}
+      - {fileID: 11400000, guid: e041f15d8693af54097099bbab93ad27, type: 2}
+      - {fileID: 11400000, guid: 2613d3683f2a99d4a93850674bc5592b, type: 2}
+      - {fileID: 11400000, guid: b798bc1cadd1c0242ae14d8c3d728b19, type: 2}
+    - _steps:
+      - {fileID: 11400000, guid: a8cc20f6f6b1e0443b11eabc819a1cca, type: 2}
+    - _steps:
+      - {fileID: 11400000, guid: 537c78c7a0a47f444bcf58b23363182e, type: 2}
+    - _steps:
+      - {fileID: 11400000, guid: d8d91c0215297e34db3a8968598e9637, type: 2}
+    - _steps:
+      - {fileID: 11400000, guid: 00e1b02ce3383b740bfacc57a85d7689, type: 2}
+    - _steps:
+      - {fileID: 11400000, guid: 5c09592e7921aed4caa1ab6320f5ee3e, type: 2}
+      - {fileID: 11400000, guid: f260de5030c5b744ab5f99e586439026, type: 2}
+    - _steps:
+      - {fileID: 11400000, guid: 2b7988e02f9a2eb46815285fddd339e8, type: 2}
+      - {fileID: 11400000, guid: 6c8985898ea8f384aaa074e7ea6dde6f, type: 2}
+  _inactiveActionBehavior: 1
   _analyzerProvider: {fileID: 11400000, guid: 513851f61e013a947b730af78f158eb3, type: 2}
-  _groups: []
+  _groups:
+  - _groupId: exam-group-01
+    _displayName: Exam Group 1
+    _steps:
+    - {fileID: 11400000, guid: 749367a6d86d32547a52f1e454262128, type: 2}
+    - {fileID: 11400000, guid: e041f15d8693af54097099bbab93ad27, type: 2}
+    - {fileID: 11400000, guid: 2613d3683f2a99d4a93850674bc5592b, type: 2}
+    - {fileID: 11400000, guid: b798bc1cadd1c0242ae14d8c3d728b19, type: 2}
+  - _groupId: exam-group-02
+    _displayName: Exam Group 2
+    _steps:
+    - {fileID: 11400000, guid: a8cc20f6f6b1e0443b11eabc819a1cca, type: 2}
+    - {fileID: 11400000, guid: 537c78c7a0a47f444bcf58b23363182e, type: 2}
+    - {fileID: 11400000, guid: d8d91c0215297e34db3a8968598e9637, type: 2}
+    - {fileID: 11400000, guid: 00e1b02ce3383b740bfacc57a85d7689, type: 2}
+  - _groupId: exam-group-03
+    _displayName: Exam Group 3
+    _steps:
+    - {fileID: 11400000, guid: 5c09592e7921aed4caa1ab6320f5ee3e, type: 2}
+    - {fileID: 11400000, guid: f260de5030c5b744ab5f99e586439026, type: 2}
+    - {fileID: 11400000, guid: 2b7988e02f9a2eb46815285fddd339e8, type: 2}
+    - {fileID: 11400000, guid: 6c8985898ea8f384aaa074e7ea6dde6f, type: 2}
   _violationThreshold: 2
   _maximumScore: 100
   _failedStepPenalty: 10

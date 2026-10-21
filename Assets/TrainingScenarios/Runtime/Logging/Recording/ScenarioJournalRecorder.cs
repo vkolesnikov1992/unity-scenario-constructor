@@ -103,9 +103,7 @@ namespace TrainingScenarios.Runtime.Logging.Recording
             }
 
             var step = _runner.Session.GetStep(stepEvaluation.StepId);
-            var attemptNumber = stepEvaluation.StepStatus == StepStatus.Active
-                ? step.AttemptCount + 1
-                : 0;
+            var attemptNumber = step.AttemptCount + 1;
 
             AppendEvent(
                 stepEvaluation.Action.Timestamp,

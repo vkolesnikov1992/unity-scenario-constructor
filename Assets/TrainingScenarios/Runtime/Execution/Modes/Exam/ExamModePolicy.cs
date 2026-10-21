@@ -69,6 +69,22 @@ namespace TrainingScenarios.Runtime.Execution.Modes.Exam
             }
         }
 
+        public void ApplyInactiveEvaluation(
+            ScenarioSession session,
+            StepRuntime step,
+            StepEvaluation evaluation)
+        {
+            if (evaluation.Outcome != StepEvaluationOutcome.Violation)
+            {
+                return;
+            }
+
+            var stepGroupIndex = _groupIndexByStepId[step.DefinitionId];
+            session.RecordInactiveViolation(step.DefinitionId);
+            session.FailInactiveStep(step.DefinitionId);
+            RecordGroupViolation(session, stepGroupIndex);
+        }
+
         public ExamGroupProgress GetGroupProgress(int groupIndex)
         {
             var group = _groupPlan.Groups[groupIndex];
@@ -89,12 +105,19 @@ namespace TrainingScenarios.Runtime.Execution.Modes.Exam
                 _groupStatuses[groupIndex] = ExamGroupStatus.ThresholdReached;
                 PublishProgress(groupIndex);
                 SkipUnfinishedGroupSteps(session, groupIndex);
-                ActivateNextGroup();
+                if (groupIndex == CurrentGroupIndex)
+                {
+                    ActivateNextGroup(session);
+                }
+
                 return;
             }
 
             PublishProgress(groupIndex);
-            CompleteGroupIfTerminal(session, groupIndex);
+            if (groupIndex == CurrentGroupIndex)
+            {
+                CompleteGroupIfTerminal(session, groupIndex);
+            }
         }
 
         private void CompleteGroupIfTerminal(ScenarioSession session, int groupIndex)
@@ -107,7 +130,7 @@ namespace TrainingScenarios.Runtime.Execution.Modes.Exam
 
             _groupStatuses[groupIndex] = ExamGroupStatus.Completed;
             PublishProgress(groupIndex);
-            ActivateNextGroup();
+            ActivateNextGroup(session);
         }
 
         private void SkipUnfinishedGroupSteps(ScenarioSession session, int groupIndex)
@@ -121,16 +144,28 @@ namespace TrainingScenarios.Runtime.Execution.Modes.Exam
             }
         }
 
-        private void ActivateNextGroup()
+        private void ActivateNextGroup(ScenarioSession session)
         {
-            CurrentGroupIndex++;
-            if (CurrentGroupIndex >= _groupPlan.Groups.Count)
+            while (++CurrentGroupIndex < _groupPlan.Groups.Count)
             {
+                if (_groupStatuses[CurrentGroupIndex] == ExamGroupStatus.ThresholdReached ||
+                    _groupStatuses[CurrentGroupIndex] == ExamGroupStatus.Completed)
+                {
+                    continue;
+                }
+
+                var group = _groupPlan.Groups[CurrentGroupIndex];
+                if (group.StepIds.All(stepId => session.GetStep(stepId).IsTerminal))
+                {
+                    _groupStatuses[CurrentGroupIndex] = ExamGroupStatus.Completed;
+                    PublishProgress(CurrentGroupIndex);
+                    continue;
+                }
+
+                _groupStatuses[CurrentGroupIndex] = ExamGroupStatus.Active;
+                PublishProgress(CurrentGroupIndex);
                 return;
             }
-
-            _groupStatuses[CurrentGroupIndex] = ExamGroupStatus.Active;
-            PublishProgress(CurrentGroupIndex);
         }
 
         private void PublishProgress(int groupIndex)

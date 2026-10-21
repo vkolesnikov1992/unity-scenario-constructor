@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using TrainingScenarios.Editor.Validation;
+using TrainingScenarios.Runtime.Actions.Bindings;
 using TrainingScenarios.Runtime.Configuration.Definitions;
 using TrainingScenarios.Runtime.Validation;
 using TrainingScenarios.Runtime.Validation.Composition;
@@ -22,9 +23,20 @@ namespace TrainingScenarios.Editor.Windows
 
         public void Validate(ScenarioDefinition scenario)
         {
+            Validate(ScenarioValidationContextFactory.Create(scenario));
+        }
+
+        public void Validate(
+            ScenarioDefinition scenario,
+            SceneBindingRegistry sceneBindings)
+        {
+            Validate(new ScenarioValidationContext(scenario, sceneBindings));
+        }
+
+        private void Validate(ScenarioValidationContext context)
+        {
             var validator = new ScenarioValidator(
                 ScenarioValidationRuleRegistry.CreateDefault());
-            var context = ScenarioValidationContextFactory.Create(scenario);
             _issues = validator.Validate(context);
             HasResult = true;
         }

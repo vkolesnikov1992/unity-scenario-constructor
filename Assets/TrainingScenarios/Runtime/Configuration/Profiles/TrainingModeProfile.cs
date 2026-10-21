@@ -12,7 +12,7 @@ namespace TrainingScenarios.Runtime.Configuration.Profiles
     [CreateAssetMenu(
         fileName = "TrainingModeProfile",
         menuName = "Training Scenarios/Profiles/Training")]
-    public sealed class TrainingModeProfile : ScenarioModeProfile
+    public class TrainingModeProfile : ScenarioModeProfile
     {
         [SerializeField]
         private int _firstAttemptScore = 10;

@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9aa9f671e3d60a048b75687e5ff03149, type: 3}
+  m_Name: TrainingScoreControl_Exam
+  m_EditorClassIdentifier: TrainingScenarios.Runtime::TrainingScenarios.Runtime.Configuration.Profiles.ExamModeProfile
+  _activationPlan:
+    _stages:
+    - _steps:
+      - {fileID: 11400000, guid: 749367a6d86d32547a52f1e454262128, type: 2}
+      - {fileID: 11400000, guid: 2613d3683f2a99d4a93850674bc5592b, type: 2}
+      - {fileID: 11400000, guid: b798bc1cadd1c0242ae14d8c3d728b19, type: 2}
+  _inactiveActionBehavior: 1
+  _analyzerProvider: {fileID: 11400000, guid: 513851f61e013a947b730af78f158eb3, type: 2}
+  _groups:
+  - _groupId: control-group-01
+    _displayName: Control Group
+    _steps:
+    - {fileID: 11400000, guid: 749367a6d86d32547a52f1e454262128, type: 2}
+    - {fileID: 11400000, guid: 2613d3683f2a99d4a93850674bc5592b, type: 2}
+    - {fileID: 11400000, guid: b798bc1cadd1c0242ae14d8c3d728b19, type: 2}
+  _violationThreshold: 2
+  _maximumScore: 100
+  _failedStepPenalty: 10
+  _skippedStepPenalty: 5

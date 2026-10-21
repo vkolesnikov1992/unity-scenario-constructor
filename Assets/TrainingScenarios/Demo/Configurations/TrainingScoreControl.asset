@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62bed7ccf064d454d9dc928718187a07, type: 3}
+  m_Name: TrainingScoreControl
+  m_EditorClassIdentifier: TrainingScenarios.Runtime::TrainingScenarios.Runtime.Configuration.Definitions.ScenarioDefinition
+  _scenarioId: bb4fb13bfd524f6db0eea776716c59bc
+  _displayName: Training Score 15 Control
+  _description: A three-step control scenario for reproducing the training score
+    15.
+  _steps:
+  - {fileID: 11400000, guid: 749367a6d86d32547a52f1e454262128, type: 2}
+  - {fileID: 11400000, guid: 2613d3683f2a99d4a93850674bc5592b, type: 2}
+  - {fileID: 11400000, guid: b798bc1cadd1c0242ae14d8c3d728b19, type: 2}
+  _trainingProfile: {fileID: 11400000, guid: 668596e7bb9d4ee4491d826d7f52945f, type: 2}
+  _examProfile: {fileID: 11400000, guid: b5dbba29b6422ed49b83a1c97619fe74, type: 2}
+  _loggerProvider: {fileID: 11400000, guid: 7fd908a0b48671c44abcf0ba6a1302c6, type: 2}

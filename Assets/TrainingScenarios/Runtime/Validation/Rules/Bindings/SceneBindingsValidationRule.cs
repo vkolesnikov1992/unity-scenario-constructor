@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using TrainingScenarios.Runtime.Actions.Bindings;
 using TrainingScenarios.Runtime.Rules.Contracts;
 using TrainingScenarios.Runtime.Validation.Contracts;
 using TrainingScenarios.Runtime.Validation.Models;
@@ -27,7 +28,7 @@ namespace TrainingScenarios.Runtime.Validation.Rules.Bindings
                 yield break;
             }
 
-            var bindingIds = new HashSet<string>(StringComparer.Ordinal);
+            var bindingsById = new Dictionary<string, SceneBindingBehaviour>(StringComparer.Ordinal);
             foreach (var binding in context.SceneBindings.Bindings)
             {
                 if (!binding)
@@ -50,7 +51,7 @@ namespace TrainingScenarios.Runtime.Validation.Rules.Bindings
                     continue;
                 }
 
-                if (!bindingIds.Add(binding.BindingId))
+                if (!bindingsById.TryAdd(binding.BindingId, binding))
                 {
                     yield return new ValidationIssue(
                         "SCENE_BINDING_ID_DUPLICATE",
@@ -80,7 +81,7 @@ namespace TrainingScenarios.Runtime.Validation.Rules.Bindings
                             $"Step '{step.DisplayName}' contains an empty scene binding ID.",
                             step);
                     }
-                    else if (!bindingIds.Contains(bindingId))
+                    else if (!bindingsById.ContainsKey(bindingId))
                     {
                         yield return new ValidationIssue(
                             "STEP_BINDING_NOT_FOUND",
@@ -88,6 +89,28 @@ namespace TrainingScenarios.Runtime.Validation.Rules.Bindings
                             $"Step '{step.DisplayName}' requires scene binding '{bindingId}', " +
                             "but it is not registered in the scene.",
                             step);
+                    }
+                }
+
+                if (!(step.RuleDefinition is ISceneStateRequirementProvider stateRequirements))
+                {
+                    continue;
+                }
+
+                foreach (var stateId in stateRequirements
+                             .GetRequiredStateIds()
+                             .Where(stateId => !string.IsNullOrWhiteSpace(stateId))
+                             .Distinct(StringComparer.Ordinal))
+                {
+                    if (bindingsById.TryGetValue(stateId, out var binding) &&
+                        !(binding is IScenarioStateProvider))
+                    {
+                        yield return new ValidationIssue(
+                            "STEP_STATE_BINDING_INVALID",
+                            ValidationSeverity.Error,
+                            $"Step '{step.DisplayName}' requires scene binding '{stateId}' " +
+                            "to provide scenario state.",
+                            binding);
                     }
                 }
             }

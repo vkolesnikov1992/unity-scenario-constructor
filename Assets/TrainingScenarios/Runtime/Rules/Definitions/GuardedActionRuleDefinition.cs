@@ -10,7 +10,8 @@ namespace TrainingScenarios.Runtime.Rules.Definitions
     [Serializable]
     public sealed class GuardedActionRuleDefinition :
         IStepRuleDefinition,
-        ISceneBindingRequirementProvider
+        ISceneBindingRequirementProvider,
+        ISceneStateRequirementProvider
     {
         [SerializeField]
         private ActionRequirement _expectedAction = new ActionRequirement();
@@ -68,6 +69,11 @@ namespace TrainingScenarios.Runtime.Rules.Definitions
                 yield return _expectedAction.SourceId;
             }
 
+            yield return _requiredStateId;
+        }
+
+        public IEnumerable<string> GetRequiredStateIds()
+        {
             yield return _requiredStateId;
         }
     }

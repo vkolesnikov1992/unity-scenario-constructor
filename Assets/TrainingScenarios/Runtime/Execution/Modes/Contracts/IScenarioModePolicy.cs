@@ -15,5 +15,10 @@ namespace TrainingScenarios.Runtime.Execution.Modes.Contracts
             ScenarioSession session,
             StepRuntime step,
             StepEvaluation evaluation);
+
+        void ApplyInactiveEvaluation(
+            ScenarioSession session,
+            StepRuntime step,
+            StepEvaluation evaluation);
     }
 }

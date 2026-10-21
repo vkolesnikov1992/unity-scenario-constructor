@@ -55,6 +55,13 @@ namespace TrainingScenarios.Runtime.Core.Steps
             ViolationCount = checked(ViolationCount + 1);
         }
 
+        internal void RecordInactiveViolation()
+        {
+            EnsureInactive("record an inactive-step violation for");
+            AttemptCount = checked(AttemptCount + 1);
+            ViolationCount = checked(ViolationCount + 1);
+        }
+
         internal void Complete(DateTimeOffset timestamp)
         {
             EnsureActive("complete");
@@ -64,6 +71,12 @@ namespace TrainingScenarios.Runtime.Core.Steps
         internal void Fail(DateTimeOffset timestamp)
         {
             EnsureActive("fail");
+            SetTerminalStatus(StepStatus.Failed, timestamp);
+        }
+
+        internal void FailInactive(DateTimeOffset timestamp)
+        {
+            EnsureInactive("fail");
             SetTerminalStatus(StepStatus.Failed, timestamp);
         }
 
@@ -87,6 +100,15 @@ namespace TrainingScenarios.Runtime.Core.Steps
         private void EnsureActive(string operation)
         {
             if (Status != StepStatus.Active)
+            {
+                throw new InvalidOperationException(
+                    $"Cannot {operation} step '{DefinitionId}' while its status is '{Status}'.");
+            }
+        }
+
+        private void EnsureInactive(string operation)
+        {
+            if (Status != StepStatus.Inactive)
             {
                 throw new InvalidOperationException(
                     $"Cannot {operation} step '{DefinitionId}' while its status is '{Status}'.");

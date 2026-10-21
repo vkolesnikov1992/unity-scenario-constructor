@@ -83,6 +83,14 @@ namespace TrainingScenarios.Runtime.Core.Sessions
             StepChanged?.Invoke(step);
         }
 
+        public void RecordInactiveViolation(string stepId)
+        {
+            EnsureRunning();
+            var step = GetStep(stepId);
+            step.RecordInactiveViolation();
+            StepChanged?.Invoke(step);
+        }
+
         public void CompleteStep(string stepId)
         {
             SetTerminalStatus(stepId, StepStatus.Completed);
@@ -91,6 +99,16 @@ namespace TrainingScenarios.Runtime.Core.Sessions
         public void FailStep(string stepId)
         {
             SetTerminalStatus(stepId, StepStatus.Failed);
+        }
+
+        public void FailInactiveStep(string stepId)
+        {
+            EnsureRunning();
+            var step = GetStep(stepId);
+            var timestamp = _utcNow();
+            step.FailInactive(timestamp);
+            StepChanged?.Invoke(step);
+            _activationEngine.NotifyStepTerminal(stepId, timestamp);
         }
 
         public bool SkipStep(string stepId)
