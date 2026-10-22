@@ -16,15 +16,12 @@ MonoBehaviour:
     _stages:
     - _steps:
       - {fileID: 11400000, guid: e041f15d8693af54097099bbab93ad27, type: 2}
-    - _steps:
       - {fileID: 11400000, guid: 749367a6d86d32547a52f1e454262128, type: 2}
-    - _steps:
       - {fileID: 11400000, guid: 2613d3683f2a99d4a93850674bc5592b, type: 2}
     - _steps:
       - {fileID: 11400000, guid: b798bc1cadd1c0242ae14d8c3d728b19, type: 2}
     - _steps:
       - {fileID: 11400000, guid: a8cc20f6f6b1e0443b11eabc819a1cca, type: 2}
-    - _steps:
       - {fileID: 11400000, guid: 537c78c7a0a47f444bcf58b23363182e, type: 2}
     - _steps:
       - {fileID: 11400000, guid: d8d91c0215297e34db3a8968598e9637, type: 2}

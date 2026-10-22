@@ -5,6 +5,7 @@ namespace TrainingScenarios.Runtime.Logging.Models
         SessionStarted,
         StepActivated,
         ActionReceived,
+        StepEvaluated,
         StepViolation,
         StepCompleted,
         StepFailed,

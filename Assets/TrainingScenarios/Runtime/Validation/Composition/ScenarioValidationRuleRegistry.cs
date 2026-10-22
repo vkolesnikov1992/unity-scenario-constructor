@@ -17,6 +17,7 @@ namespace TrainingScenarios.Runtime.Validation.Composition
             {
                 new ScenarioIdentityValidationRule(),
                 new StepDefinitionsValidationRule(),
+                new ActionRoutesValidationRule(),
                 new ActivationPlanValidationRule(),
                 new ExamGroupsValidationRule(),
                 new ActivationExamCompatibilityValidationRule(),

@@ -311,7 +311,6 @@ namespace TrainingScenarios.Editor.Windows
 
             using (new EditorGUI.DisabledScope(
                        !_scenario ||
-                       _validationPanel.HasErrors ||
                        EditorApplication.isPlayingOrWillChangePlaymode))
             {
                 if (GUILayout.Button("Play Selected Scenario", EditorStyles.toolbarButton))

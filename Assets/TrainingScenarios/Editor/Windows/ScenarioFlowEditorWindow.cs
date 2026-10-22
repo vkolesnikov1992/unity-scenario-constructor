@@ -418,6 +418,17 @@ namespace TrainingScenarios.Editor.Windows
                 return;
             }
 
+            if (_requiresConversion && !EditorUtility.DisplayDialog(
+                    "Convert to Sequential Flow",
+                    $"The {_mode} profile contains parallel stages. Applying this order will " +
+                    "replace them with a sequential flow. Continue?",
+                    "Convert",
+                    "Cancel"))
+            {
+                ReloadFlow();
+                return;
+            }
+
             Undo.RecordObject(profile, undoName);
             var serializedProfile = new SerializedObject(profile);
             serializedProfile.Update();

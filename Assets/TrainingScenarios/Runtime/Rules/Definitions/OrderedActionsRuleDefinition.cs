@@ -10,6 +10,7 @@ namespace TrainingScenarios.Runtime.Rules.Definitions
     [Serializable]
     public sealed class OrderedActionsRuleDefinition :
         IStepRuleDefinition,
+        IActionRequirementProvider,
         ISceneBindingRequirementProvider
     {
         [SerializeField]
@@ -64,6 +65,19 @@ namespace TrainingScenarios.Runtime.Rules.Definitions
             if (_secondAction != null)
             {
                 yield return _secondAction.SourceId;
+            }
+        }
+
+        public IEnumerable<ActionRequirement> GetActionRequirements()
+        {
+            if (_firstAction != null)
+            {
+                yield return _firstAction;
+            }
+
+            if (_secondAction != null)
+            {
+                yield return _secondAction;
             }
         }
     }

@@ -1,0 +1,21 @@
+{
+  "name": "TrainingScenarios.Tests.EditMode",
+  "rootNamespace": "TrainingScenarios.Tests.EditMode",
+  "references": [
+    "TrainingScenarios.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": false,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false,
+  "optionalUnityReferences": [
+    "TestAssemblies"
+  ]
+}

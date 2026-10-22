@@ -97,24 +97,25 @@ namespace TrainingScenarios.Runtime.Logging.Recording
 
         private void HandleStepEvaluated(StepActionEvaluation stepEvaluation)
         {
-            if (stepEvaluation.Evaluation.Outcome != StepEvaluationOutcome.Violation)
-            {
-                return;
-            }
-
             var step = _runner.Session.GetStep(stepEvaluation.StepId);
             var attemptNumber = step.AttemptCount + 1;
+            var eventType = stepEvaluation.Evaluation.Outcome == StepEvaluationOutcome.Violation
+                ? ScenarioEventType.StepViolation
+                : ScenarioEventType.StepEvaluated;
+            var data = string.IsNullOrWhiteSpace(stepEvaluation.Evaluation.Reason)
+                ? Array.Empty<JournalDataEntry>()
+                : new[]
+                {
+                    new JournalDataEntry("reason", stepEvaluation.Evaluation.Reason)
+                };
 
             AppendEvent(
                 stepEvaluation.Action.Timestamp,
-                ScenarioEventType.StepViolation,
+                eventType,
                 stepEvaluation.StepId,
                 stepEvaluation.Evaluation.Outcome.ToString(),
                 attemptNumber,
-                new[]
-                {
-                    new JournalDataEntry("reason", stepEvaluation.Evaluation.Reason)
-                });
+                data);
         }
 
         private void HandleStepChanged(StepRuntime step)

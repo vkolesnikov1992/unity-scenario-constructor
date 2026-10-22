@@ -79,10 +79,13 @@ namespace TrainingScenarios.Runtime.Execution.Modes.Exam
                 return;
             }
 
-            var stepGroupIndex = _groupIndexByStepId[step.DefinitionId];
             session.RecordInactiveViolation(step.DefinitionId);
             session.FailInactiveStep(step.DefinitionId);
-            RecordGroupViolation(session, stepGroupIndex);
+
+            if (CurrentGroupIndex >= 0 && CurrentGroupIndex < _groupPlan.Groups.Count)
+            {
+                RecordGroupViolation(session, CurrentGroupIndex);
+            }
         }
 
         public ExamGroupProgress GetGroupProgress(int groupIndex)

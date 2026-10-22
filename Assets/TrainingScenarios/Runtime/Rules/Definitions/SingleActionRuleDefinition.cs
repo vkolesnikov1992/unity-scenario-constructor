@@ -10,6 +10,7 @@ namespace TrainingScenarios.Runtime.Rules.Definitions
     [Serializable]
     public sealed class SingleActionRuleDefinition :
         IStepRuleDefinition,
+        IActionRequirementProvider,
         ISceneBindingRequirementProvider
     {
         [SerializeField]
@@ -43,6 +44,14 @@ namespace TrainingScenarios.Runtime.Rules.Definitions
             if (_expectedAction != null)
             {
                 yield return _expectedAction.SourceId;
+            }
+        }
+
+        public IEnumerable<ActionRequirement> GetActionRequirements()
+        {
+            if (_expectedAction != null)
+            {
+                yield return _expectedAction;
             }
         }
     }

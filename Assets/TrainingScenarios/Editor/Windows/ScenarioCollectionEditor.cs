@@ -128,8 +128,7 @@ namespace TrainingScenarios.Editor.Windows
                 rect,
                 scenarioObject.targetObject,
                 steps.propertyPath);
-            list.onRemoveCallback = currentList =>
-                RemoveArrayElement(currentList.serializedProperty, currentList.index, "Remove Step");
+            list.onRemoveCallback = RemoveScenarioStep;
             list.onReorderCallback = _ => NotifyConfigurationChanged();
             return list;
         }
@@ -941,7 +940,7 @@ namespace TrainingScenarios.Editor.Windows
             var index = groups.arraySize;
             groups.InsertArrayElementAtIndex(index);
             var group = groups.GetArrayElementAtIndex(index);
-            group.FindPropertyRelative("_groupId").stringValue = string.Empty;
+            group.FindPropertyRelative("_groupId").stringValue = Guid.NewGuid().ToString("N");
             group.FindPropertyRelative("_displayName").stringValue = string.Empty;
             group.FindPropertyRelative("_steps").arraySize = 0;
             groups.serializedObject.ApplyModifiedProperties();
@@ -1014,6 +1013,77 @@ namespace TrainingScenarios.Editor.Windows
             EditorUtility.SetDirty(array.serializedObject.targetObject);
             _nestedStepLists.Clear();
             NotifyConfigurationChanged();
+        }
+
+        private void RemoveScenarioStep(ReorderableList list)
+        {
+            var steps = list.serializedProperty;
+            if (!IsValidIndex(steps, list.index))
+            {
+                return;
+            }
+
+            var step = steps.GetArrayElementAtIndex(list.index).objectReferenceValue;
+            var stepName = step ? step.name : "missing step reference";
+            var references = FindStepReferences(step);
+            if (references.Count > 0)
+            {
+                EditorUtility.DisplayDialog(
+                    "Step Is Still Assigned",
+                    $"Remove '{stepName}' from {string.Join(", ", references)} before deleting " +
+                    "it from the scenario catalog.",
+                    "OK");
+                return;
+            }
+
+            if (!EditorUtility.DisplayDialog(
+                    "Remove Step",
+                    $"Remove '{stepName}' from the scenario catalog?",
+                    "Remove",
+                    "Cancel"))
+            {
+                return;
+            }
+
+            RemoveArrayElement(steps, list.index, "Remove Step");
+        }
+
+        private List<string> FindStepReferences(UnityEngine.Object step)
+        {
+            var references = new List<string>();
+            AddStepReferences(_trainingStagesList, step, "Training flow", references);
+            AddStepReferences(_examStagesList, step, "Exam flow", references);
+            AddStepReferences(_examGroupsList, step, "Exam groups", references);
+            return references;
+        }
+
+        private static void AddStepReferences(
+            ReorderableList list,
+            UnityEngine.Object step,
+            string label,
+            ICollection<string> references)
+        {
+            if (list == null || step == null)
+            {
+                return;
+            }
+
+            var containers = list.serializedProperty;
+            for (var containerIndex = 0; containerIndex < containers.arraySize; containerIndex++)
+            {
+                var assignedSteps = containers
+                    .GetArrayElementAtIndex(containerIndex)
+                    .FindPropertyRelative("_steps");
+
+                for (var stepIndex = 0; stepIndex < assignedSteps.arraySize; stepIndex++)
+                {
+                    if (assignedSteps.GetArrayElementAtIndex(stepIndex).objectReferenceValue == step)
+                    {
+                        references.Add(label);
+                        return;
+                    }
+                }
+            }
         }
 
         private void DeleteArrayElement(SerializedProperty array, int index)
